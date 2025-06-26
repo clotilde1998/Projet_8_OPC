@@ -15,4 +15,5 @@ requests==2.32.4
 requests-html==0.10.0
 scikit-learn==1.6.1
 shap==0.47.2
+imbalanced-learn>=0.10.0
 
