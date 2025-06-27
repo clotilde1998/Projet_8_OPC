@@ -17,4 +17,5 @@ scikit-learn==1.6.1
 shap==0.47.2
 imbalanced-learn>=0.10.0
 gTTS==2.5.4
+streamlit==1.45.1
 
