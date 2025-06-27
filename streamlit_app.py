@@ -141,14 +141,3 @@ if var_select in df_global.columns:
         st.caption("La ligne rouge représente la position du client par rapport au reste de la population.")
     else:
         st.warning("Impossible de comparer : client absent.")
-
-# --- ACCESSIBILITÉ & FIN ---
-st.markdown("---")
-st.markdown("### ♿ Accessibilité et inclusivité")
-st.markdown("""
-✅ Texte redimensionnable  
-✅ Contraste visuel élevé (texte + graphes)  
-✅ Informations textuelles alternatives aux couleurs  
-✅ Lecture vocale de la décision pour malvoyants  
-✅ Titres de pages et sections explicites  
-""")
