@@ -9,8 +9,8 @@ import tempfile
 
 # CONFIGURATION
 st.set_page_config(page_title="Dashboard Crédit Client", layout="wide")
-st.title("📊 Dashboard de scoring client – Crédit")
-st.markdown("Accessible, lisible, interactif pour les métiers et les personnes en situation de handicap.")
+st.title("Évaluation du Risque Crédit")
+
 
 # --- FONCTION AUDIO ---
 
