@@ -6,14 +6,55 @@ import seaborn as sns
 import numpy as np
 from gtts import gTTS
 import tempfile
+from PIL import Image
 
 # CONFIGURATION
 st.set_page_config(page_title="Dashboard Crédit Client", layout="wide")
+
+
+# --- LOGO DANS LA SIDEBAR ---
+with st.sidebar:
+    logo = Image.open("logo.png")  # ou ton propre chemin
+    st.image(logo, use_container_width=True)
+
+
+
+# --- CHOIX DU THÈME ---
+theme = st.sidebar.radio("🎨 Thème visuel", ["Clair", "Sombre", "Contraste élevé"], index=0)
+
+# --- STYLE CSS PERSONNALISÉ ---
+def apply_custom_theme(theme):
+    if theme == "Sombre":
+        css = """
+        <style>
+            body, .stApp {
+                background-color: #1e1e1e;
+                color: #f1f1f1;
+            }
+        </style>
+        """
+    elif theme == "Contraste élevé":
+        css = """
+        <style>
+            body, .stApp {
+                background-color: black;
+                color: yellow;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                color: yellow !important;
+            }
+        </style>
+        """
+    else:
+        css = ""  # Clair = par défaut
+    st.markdown(css, unsafe_allow_html=True)
+
+apply_custom_theme(theme)
+
+# TITRE
 st.title("Évaluation du Risque Crédit")
 
-
 # --- FONCTION AUDIO ---
-
 def lire_decision_audio_web(phrase):
     try:
         tts = gTTS(phrase, lang='fr')
@@ -51,7 +92,7 @@ def load_global_data():
 df_global = load_global_data()
 
 # --- PREDICTION ---
-st.header("🧠 Résultat du modèle")
+st.header("Résultat du modèle")
 proba = None
 
 if st.button("🎯 Obtenir la prédiction pour ce client"):
@@ -65,7 +106,7 @@ if st.button("🎯 Obtenir la prédiction pour ce client"):
         else:
             proba = result["probability_default"]
             seuil = 0.5
-            label = "✅ Faible risque" if proba < seuil else "❌ Risque élevé"
+            label = "✅👍 Faible risque" if proba < seuil else "❌👎 Risque élevé"
             couleur = "green" if proba < seuil else "red"
 
             st.markdown(f"### 🔐 Probabilité de défaut : **{proba:.2%}**")
@@ -75,10 +116,15 @@ if st.button("🎯 Obtenir la prédiction pour ce client"):
             )
             st.progress(proba)
 
+            # Résumé accessibilité
+            st.markdown(
+                f"🗣️ Le modèle estime que ce client avec cette probabilité de défaut, "
+                f" est considéré comme **{'faible' if proba < 0.5 else 'élevé'}**."
+            )
+
             if st.button("🔊 Lire la décision à voix haute"):
                 phrase = f"La décision de crédit est : {'accepté' if proba < 0.5 else 'refusé'}. La probabilité de défaut est de {proba:.0%}."
                 lire_decision_audio_web(phrase)
-
 
     except Exception as e:
         st.error(f"Erreur API : {e}")
@@ -102,6 +148,7 @@ try:
         st.bar_chart(shap_series.head(10))
         st.caption("Top 10 des variables expliquant la décision pour ce client.")
 
+
         # SHAP GLOBAL
         st.subheader("🌐 Importance globale des variables")
         shap_global_series = pd.Series(shap_global).sort_values(ascending=False).head(10)
@@ -109,9 +156,16 @@ try:
         sns.barplot(x=shap_global_series.values, y=shap_global_series.index, palette="viridis", ax=ax)
         ax.set_xlabel("Importance moyenne (|valeurs SHAP|)")
         ax.set_title("Variables les plus influentes dans le modèle")
-        ax.set_facecolor("white")
+
+        if theme != "Clair":
+            fig.patch.set_facecolor('#1e1e1e')
+            ax.set_facecolor('#1e1e1e')
+            ax.title.set_color('white')
+            ax.xaxis.label.set_color('white')
+            ax.yaxis.label.set_color('white')
+            ax.tick_params(colors='white')
+
         st.pyplot(fig)
-        st.caption("Variables ayant le plus d’impact global dans le modèle.")
 
 except Exception as e:
     st.error(f"Erreur lors de la récupération des SHAP : {e}")
@@ -136,8 +190,24 @@ if var_select in df_global.columns:
         ax.axvline(val_client, color="red", linestyle="--", linewidth=2, label="Client")
         ax.legend()
         ax.set_title(f"Comparaison sur la variable : {var_select}")
-        ax.set_facecolor("white")
+
+        if theme != "Clair":
+            fig.patch.set_facecolor('#1e1e1e')
+            ax.set_facecolor('#1e1e1e')
+            ax.title.set_color('white')
+            ax.xaxis.label.set_color('white')
+            ax.yaxis.label.set_color('white')
+            ax.tick_params(colors='white')
+
         st.pyplot(fig)
         st.caption("La ligne rouge représente la position du client par rapport au reste de la population.")
+
+        # Accessibilité : résumé texte
+        moyenne = df_global[var_select].mean()
+        mediane = df_global[var_select].median()
+        st.markdown(
+            f"ℹ️ Moyenne de la population : **{moyenne:,.2f}**, médiane : **{mediane:,.2f}**. "
+            f"Valeur du client : **{val_client:,.2f}**."
+        )
     else:
         st.warning("Impossible de comparer : client absent.")
